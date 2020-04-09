@@ -23,4 +23,4 @@ To get started.
 
 Go to [SPFx Internal Activations and CAM Heatmap Video](https://youtu.be/aVQ0-G6-Peo) page
 
-Go to [SPFx Internal Activations and CAM Heatmap description](https://github.com/Ashot72/spfx-vgg16-InternalActivations-CAMHeatmap) page
+Go to [SPFx Internal Activations and CAM Heatmap description](https://ashot72.github.io/spfx-vgg16-InternalActivations-CAMHeatmap/) page
