@@ -1,6 +1,6 @@
 This is a TensorFlow.js SharePoint WebPart (SPFx) based on VGG16 Convolutional Network.
 
-Internal Activations - I visualize the outputs of intermediate layers (intimidate activations) of a convent which is useful for understanding how successive convent layers transform their inputs and for getting a first idea of the visual features learned by individual convent filters.
+Internal Activations - I visualize the outputs of intermediate layers (intermediate activations) of a convent which is useful for understanding how successive convent layers transform their inputs and for getting a first idea of the visual features learned by individual convent filters.
 
 CAM-heatmap - I visualize heatmaps of class activation in an input image which helps understanding which parts of an input play the most important role in causing the convent to generate the final classification result.
 
