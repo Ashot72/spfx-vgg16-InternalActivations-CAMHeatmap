@@ -1,0 +1,30 @@
+@import '~office-ui-fabric-react/dist/sass/References.scss';
+
+.centered {
+  position: absolute;
+  top: 250px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  @include ms-font-l;
+}
+
+.container {
+  position: relative;
+  text-align: center;
+}
+
+.list {
+  list-style: none;
+  color: red;
+}
+
+img {
+  padding: 1px;
+  border: 1px solid #021a40;
+  width: 100%;
+  height: auto;
+}
+
+.btn {
+  padding: 2px;
+}

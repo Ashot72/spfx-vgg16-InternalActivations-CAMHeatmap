@@ -1,0 +1,2386 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 15 (filtered)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:#954F72;
+	text-decoration:underline;}
+.MsoPapDefault
+	{margin-bottom:8.0pt;
+	line-height:107%;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+-->
+</style>
+
+</head>
+
+<body lang=EN-US link=blue vlink="#954F72">
+
+<div class=WordSection1>
+
+<p class=MsoNormal align=center style='text-align:center'><span
+style='font-size:16.0pt;line-height:107%'>VGG16 Convolutional Network Internal
+Activations and CAM Heatmap</span></p>
+
+<p class=MsoNormal><span style='font-size:16.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>A
+convolutional neural network (CNN)</span></i><span style='font-size:14.0pt;
+line-height:107%'> (or <i>convents</i> for short) is a type of <i>artificial
+neural network</i> mostly used in image recognition and processing</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>and
+specifically designed to process pixel data.</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>VGG16 </span></i><span
+style='font-size:14.0pt;line-height:107%'>is a convolutional neural network
+model proposed by <i>K. Simonyan</i> and <i>A. Zisserman</i> from the
+University of Oxford in the paper <i>Very Deep</i></span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>Convolutional
+Networks for Large-Scale Image Recognition</span></i><span style='font-size:
+14.0pt;line-height:107%'>. The model archives 92.7% top-5 test accuracy in ImageNet,
+which is a dataset of over</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>14 million
+images belonging to 1000 classes. VGG weights are trained on <i>ImageNet</i>
+dataset.</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>ImageNet </span></i><span
+style='font-size:14.0pt;line-height:107%'>is a large-scale public dataset of
+labeled colored images. It is an important training set and benchmark for
+computer vision-oriented</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>deep neural networks.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This
+application is based on TensorFlow.js </span><a
+href="https://www.tensorflow.org/js" target="_blank"><span style='font-size:
+14.0pt;line-height:107%;color:#954F72'>https://www.tensorflow.org/js</span></a><span
+style='font-size:14.0pt;line-height:107%'> which is an open source library that
+you can use to define, train and</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>run machine
+learning models entirely in browser, or in Node.js using JavaScript and a
+high-level API. As our application is a SharePoint (SPFx)</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>web part we
+are going to run it in a browser.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1228 height=669 id="Picture 1"
+src="index_files/image001.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 1</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>If you go to
+TensorFlow.js API page </span><span style='color:black'>&nbsp;</span><a
+href="https://js.tensorflow.org/api/latest/" target="_blank"><span
+style='font-size:14.0pt;line-height:107%;color:#954F72'>https://js.tensorflow.org/api/latest/</span></a><span
+style='font-size:14.0pt;line-height:107%'> you will see tremendous amount of
+objects, functions and properties</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>that belong
+to this library. There are 2 sets of APIs. First one is low level linear
+algebra API that we are going to use in our app and the second one</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>is higher
+level API that makes pretty easy to make some more advanced machine learning
+algorithms. We will use both APIs.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>Tensors</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Tensors are
+the core data structure of TensorFlow.js. They are generalization of vectors
+and metrics to potentially higher dimensions.</span></p>
+
+<p class=MsoNormal><img border=0 width=719 height=377 id="Picture 2"
+src="index_files/image002.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 2</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here are one,
+two and three-dimensional tensors.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=802 height=518 id="Picture 3"
+src="index_files/image003.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 3</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I printed a 1D
+tensor, the size and the shape.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The size of
+the tensor is 4. With <i>shape</i> we are essentially talking about a property
+of a tensor that describes how many elements there are</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>in each
+individual dimension.  Our 1D tensor</span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'</span><span style='font-size:14.0pt;line-height:
+107%'>s shape is [4].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=840 height=476 id="Picture 29"
+src="index_files/image004.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 4</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The size of
+the 2D tensor is 12 and the shape is [3,4], as there are 3 rows and 4 columns.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=802 height=518 id="Picture 5"
+src="index_files/image003.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 5</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The size of
+3D tensor is 3, and the shape is [1, 1, 3]. In convolutional networks we mostly
+deal with 3D or 4D tensors that we will discuss it later.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We use
+tensors to do basic arithmetic operations like adding, subtracting, dividing
+and so on.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=764 height=226 id="Picture 7"
+src="index_files/image005.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 6</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here we add <i>first
+tensor to second one</i>. We take each value inside of <i>first </i>data tensor
+and add value from <i>second</i> tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This is
+called <i>element wise operations</i>. We look at identical indices in both
+tensors and then do some operations on those</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>two
+individual indices together, then take the result of that and put it into a new
+output tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=955 height=301 id="Picture 8"
+src="index_files/image006.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 7</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>Addition</span></i><span
+style='font-size:14.0pt;line-height:107%'>, <i>subtraction</i>, <i>division</i>
+and <i>multiplication</i> element wise operations with tensors.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=869 height=319 id="Picture 9"
+src="index_files/image007.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 8</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is
+element wise operation <i>addition </i>on 2D tensors. There are<i> other
+element wise operations </i>such as <i>less than</i>, </span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>greater
+than</span></i><span style='font-size:14.0pt;line-height:107%'> <i>equal</i>
+etc., <i>logical comparison element wise operations</i> and so on.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=810 height=354 id="Picture 10"
+src="index_files/image008.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 9</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>If two
+tensors</span><span style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'> shapes do not match then we cannot
+do <i>element wise operations</i>. First tensor</span><span style='font-size:
+14.0pt;line-height:107%;color:black'>'s shape is [4] and the other one's [3].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>The
+second tensor does not have a corresponding value for the value 4 of the first
+tensor, so the result is <i>undefined</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>But
+there are some situations that we are allowed to do <i>element wise operations </i>even
+the shapes pf two tensors do not match.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=797 height=310 id="Picture 11"
+src="index_files/image009.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 10</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>You can see
+that the first tensor</span><span style='font-size:14.0pt;line-height:107%;
+color:black'>'s shape is 3, the second tensor's shape is 1 and we do element
+wise operation <i>addition</i> though</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>their
+shapes do not match. </span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%;
+color:black'>Element wise operations with two tensors that have different
+shapes is the process referred as broadcasting</span></i><span
+style='font-size:14.0pt;line-height:107%;color:black'>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>In
+order to know if <i>broadcasting</i> works, we take shape of both tensors from
+right to left and if shapes are equal to each other.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>or
+one shape has a value of 1 (or no shape for the second tensor) then we are
+allowed to do <i>broadcasting</i> operation.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=428 height=391 id="Picture 13"
+src="index_files/image010.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 11</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The shape of
+the first tensor is 3 and the second one is 1. Starting from right hand side to
+and comparing to left (does not make sense</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>in this case
+as both have single values). If they are identical or one of them is equal to 1
+then we are allowed to do broadcasting operations.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In this case
+two shape values are not equal but the second one has a value of one. So, <i>broadcasting</i>
+is allowed.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=640 height=331 id="Picture 14"
+src="index_files/image011.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 12</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Her is
+another example. Starting from right hand side and comparing to left. 3 is
+equal to 1, no but 1 is equal to 1 yes, so we are</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>allowed to
+broadcasting so far. We are moving to the next index, 2 is equal to 2, yes,
+they are, and we are allowed to do broadcasting.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=894 height=372 id="Picture 15"
+src="index_files/image012.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 13</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In this case
+we received a broadcasting error as 3 is not equal to 2.</span></p>
+
+<p class=MsoNormal><img border=0 width=576 height=432 id="Picture 16"
+src="index_files/image013.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 14</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is a
+geometry of some examples visualized form a python book I was learning. It is
+explained on <i>NumPy </i>arrays</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>but it works
+for TensorFlow as well.</span></p>
+
+<p class=MsoNormal><img border=0 width=1166 height=487 id="Picture 17"
+src="index_files/image014.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 15</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Testing
+third example with TensorFlow.js. We got the same result with <i>broadcasting</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=778 height=555 id="Picture 18"
+src="index_files/image015.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 16</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Let</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'s see how to concatenate
+two tensors. I formatted the output for you to see how it was concatenated. You
+might expect</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>2
+rows but the output shape is [4, 3], four rows and three columns not [2, 6], 2
+rows and 6 columns. The concatenate method</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>has
+a second argument that you can use to specify which way your tensors will be
+joined together.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=840 height=537 id="Picture 19"
+src="index_files/image016.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 17</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We can pass
+in the second integer argument to <i>concat </i>function either 0 or 1, because
+we have a two-dimensional tensor that we are with. The default</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>argument for
+this is 0. We got the same result that had before.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=833 height=531 id="Picture 20"
+src="index_files/image017.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 18</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>When we put
+in 1, we get a different result. 0 or 1 refer to the axis concatenation. Number
+0 means concatenate along the columns,</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>1 along the
+rows.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=732 height=398 id="Picture 21"
+src="index_files/image018.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 19</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Let</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'s look at <i>sum</i>
+functionality. By default, if we call <i>sum </i>with no arguments it is going
+to look at every value inside of the tensor and sum them</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>all
+together and the result is 45. We can also <i>sum </i>along an axis very
+similar to how we were doing contamination along an axis. With axis 0 we</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>summed
+along each these rows [12, 15, 18] and with 1 along the columns [6, 15, 24].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=764 height=422 id="Picture 23"
+src="index_files/image019.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 20</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>Min </span></i><span
+style='font-size:14.0pt;line-height:107%'>function finding overall min value
+and values along the axis.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=858 height=448 id="Picture 24"
+src="index_files/image020.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 21</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>When we call
+the <i>sum </i>function it reduces the dimension of the output tensor. First tensor</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'s dimension is [3, 3]
+and after the sum it is [3].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>We
+went from 2D tensor to 1D. To keep dimension we call first.sum(1, true) with <i>true</i>
+argument. The second dimension is referred to as the keep</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>dimension
+argument. When we pass in a value of <i>true</i> and when the <i>sum </i>function
+runs, it is not going to reduce the dimensions of that input tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>The
+dimension is [3, 1]. We can get the same result with <i>expandDims</i> which
+increases the dimension of your tensor by 1.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=845 height=473 id="Picture 25"
+src="index_files/image021.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 22</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The length
+of the <i>shape </i>is known as the tensor</span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'s <i>rank</i>. As I already mentioned 4D tensors
+are frequently used in many models such as </span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%;
+color:black'>deep convolutional networks</span></i><span style='font-size:14.0pt;
+line-height:107%;color:black'> but 4D tensors are harder to visualize, because
+the world we live in has only three spatial dimensions. For that reason, </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>I
+am going to show 3D and 4D tensors having the same data with different shapes
+to get it better.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=212 height=564 id="Picture 28"
+src="index_files/image022.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 23</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here we have
+a 3D tensor of size 4. We reshaped the tensor. Initially, the shape was [1, 2, 2].
+First dimension is displayed in the <i>green</i> border and you </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>see we have
+just one opening and closing bracket which is 1 in [1, 2, 2]. This is the <i>height</i>.
+The second dimension is the <i>blue</i> borders, which is 2 and this is the <i>width</i>.
+</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Third one is
+the <i>brown</i> border; 2 and it is the <i>depth</i>. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In the reshaped
+tensor [2 ,1, 2] there are 2 brackets in the <i>green</i> rectangle 2 in [2, 1,
+2] which is the <i>height</i> and each of them contains one <i>width</i> (blue
+rectangle)</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'> 1 in [2, 1,
+2] and the last 2 in [2, 1, 2] is the <i>depth</i>. The third tensor is similar
+to the second one but the difference is that the <i>height</i> is 2 and <i>depth</i>
+is 1.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The third
+[2, 2, 1] is similar to [2, 1, 2] tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We use a 3D
+tensor to represent an image. The first two dimensions of the tensor are the <i>height</i>
+and <i>width </i>dimensions. The third one, the <i>depth</i></span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Is the color
+<i>channel</i>. </span></p>
+
+<p class=MsoNormal><img border=0 width=1025 height=310 id="Picture 31"
+src="index_files/image023.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 24</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We encode
+color usually as red-green-blue (RBG) values. If we have an RGB-encoded color
+image of size 28 x 28 like in the picture above</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>then we can
+represent it as a 3D tensor of size [28, 28, 3]. As we have 3 channels RGB then
+the last number in the tensor is 3. In some</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>computer-vision
+problems images are non-color (e.g. grayscale). In those cases, we just have
+one channel and if we represent it as a 3D</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>tensor, the
+tensor shape would be [height, width, 1], say, [28, 28, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The mode of
+encoding an image is referred to as <i>height-width-channel </i>or <i>HWC </i>for
+short.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We often combine
+set of images into a batch to perform deep learning on images. When batching
+images, the dimension of individual images</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'> is always
+the first one. Therefore, a batch of images is a 4D tensor, with the four
+dimensions; <i>image number (N)</i>, <i>height (H)</i>, <i>width (W)</i>, </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>and <i>color
+channel (C) </i>respectively. This format is known as <i>NHWC</i>. There is an
+alternative format which is <i>NCHW</i> where the channel dimension (C)</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>is located
+ahead of the <i>height</i> and <i>width</i> dimensions. TensorFlow.js supports
+both <i>NHWC</i> and <i>NCHW</i> formats but we will stick to <i>NHWC</i> one.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=273 height=580 id="Picture 30"
+src="index_files/image024.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 25</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is 4D
+tensor [1, 2, 2, 4] and the first dimension is 1 the <i>green</i> rectangle. In
+terms of <i>NHWC</i> (assuming it is an image tensor) 1 is the batch size
+meaning we will perform deep </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>learning on
+a single image. 2 in the <i>blue</i> rectangle is the image <i>height</i>, the
+other 2 is the <i>width </i>the <i>brown</i> rectangle, <i>and</i> the last one
+4 is the channel the <i>violet</i> color. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>4 is a kind
+of unusual number for the channel as we stated that it should be either 3 or 1
+but we will see later on that the channels in the output tensor do not actually
+</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>have to do
+with colors. Instead, they may represent different visual features of the input
+image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=633 height=300 id="Picture 40"
+src="index_files/image025.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 26</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>A batch of
+128 color images of size 256 * 256</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=247 height=767 id="Picture 32"
+src="index_files/image026.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 27</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is 4D
+tensor of size [4, 2, 2, 1].  The first dimension is 4, meaning we process 4
+images to perform deep learning on them.</span></p>
+
+<p class=MsoNormal><img border=0 width=903 height=609 id="Picture 33"
+src="index_files/image027.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 28</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Let</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s look into VGG16 layers. You could
+see some repetitions of <i>convulation + ReLU</i> and <i>max pooling</i>
+layers.</span><img border=0 width=732 height=242 id="Picture 34"
+src="index_files/image028.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 29</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>VGG-16 has
+16 layers. Its layers consist of <i>Convolutional</i> layers, <i>Max Pooling</i>
+layers, <i>Activation</i> layers and <i>Fully connected</i> layers.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>There are 13
+convolutional layers, 5 Max Pooling layers and 3 Dense layers. We will talk
+about filters later, but for now you should</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'> see that (Figure
+27) <i>Conv 1</i> has 64 filters, <i>Conv 2</i> has 128 filters, <i>Conv 3</i>
+has 256 filters, <i>Conv 4</i> and <i>Conv 5</i> have 512 filters. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The VGG16
+has been pretrained on the large-scale ImageNet dataset and is available as a <i>Keras</i>
+application. We need to convert it</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>in a format
+that TensorFlow.js can understand. I converted the VGG16 model from Python into
+Tensorflow.js format which is available</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>in my VGG16
+GitHub page.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=311 height=667 id="Picture 35"
+src="index_files/image029.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 30</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>After the
+conversion we have <i>model.json</i> file and <i>weights</i> in .bin format.
+Note, that the size is 530MB and it is pretty big as compared to</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>MobileNet
+</span></i><span style='font-size:14.0pt;line-height:107%'>having less than
+10MB weight size.</span></p>
+
+<p class=MsoNormal><img border=0 width=716 height=657 id="Picture 37"
+src="index_files/image030.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 31</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This is the
+VGG16 model summary and we are going to see what actually <i>Convulational2D</i>
+(conv2d) layer does.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=850 height=657 id="Picture 39"
+src="index_files/image031.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 32</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>You can also
+explore <i>model.json</i> file in a JSON viewer. You will see layers named <i>block1_conv1</i>,
+<i>block2_conv1</i>, <i>block1_pool</i> etc.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Note, that
+there are much more complicated models which perform better, for example
+Microsoft</span><span style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s <i>ResNet</i> model which was the </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>winner of
+2015 ImageNet with 3.6% error rate, but the model has 152 layers! while VGG has
+16.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>You may ask
+yourself why just not to feed the pixel values directly into an MLP. This
+architecture is discovered through years of research in</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>neural networks
+and it leads to an accuracy significantly better.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>Conv2d
+Layer</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The first
+layer (Figure 29) is a <i>conv2d</i> layer, which performs 2D convolution. <i>conv2d</i>
+is an image-to-image transform, it performs 4D (NHWC)</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>image tensor
+into another 4D image tensor, possibly with different height and width and
+number of channels. It is similar to <i>Photoshop filters</i></span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>which lead
+to image effects such as blurring and sharpening.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In image
+processing, a <i>kernel</i>, or <i>filter</i> is a small matrix. It is used for
+<i>blurring</i>, <i>sharpening</i>, <i>embossing</i>, <i>edge</i> <i>detection</i>,
+and more.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This is
+accomplished by doing a convolution between a kernel and an image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=803 height=384 id="Picture 41"
+src="index_files/image032.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 33</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>On the left
+site is the input to the convolutional layer, for example the input image
+(pixels). On the right site is the convolutional</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>filter/kernel.
+</span></i><span style='font-size:14.0pt;line-height:107%'>This is called a 3x3
+<i>convolution</i> due to the shape of the filter. We perform the convolution
+operation by sliding this filter</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>over the
+input. At every point we do <i>element wise matrix manipulation (Figure 6)</i>
+and <i>sum </i>the result.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=851 height=368 id="Picture 43"
+src="index_files/image033.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 34</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is the
+filter is at the top left, the output of the convolution operation <i>4 </i>is
+show in the resulting feature map.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=815 height=387 id="Picture 44"
+src="index_files/image034.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 35</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We multiply
+the respective numbers (the same colors) and sum up the result. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>1x1 + 1x0 +
+1x1 + 0x0 + 1x1 + 1x0 + 0x1 + 0x0 + 1x1 = 4</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>You should
+know that the values in the final feature maps are not actually the sums, but <i>reLU</i>
+function applied to them which is </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>not
+displayed here. You can read about <i>nonlinear activation functions</i> in my <i>ml5-spfx-extension
+</i>description page.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'><a
+href="https://ashot72.github.io/ml5-spfx-extension/index.html" target="_blank">https://ashot72.github.io/ml5-spfx-extension/index.html</a></span></p>
+
+<p class=MsoNormal><img border=0 width=787 height=377 id="Picture 45"
+src="index_files/image035.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 36</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We slide the
+filter to the right and perform the same operation, adding the result to the
+feature map as well.</span></p>
+
+<p class=MsoNormal><img border=0 width=862 height=309 id="Picture 47"
+src="index_files/image036.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 37</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is the final
+feature map. I showed a convolutional operation in 2D using 3x3 filter. In
+reality these convolutions are </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>performed in
+3D. As we knew an image is represented as an 3D matrix with dimensions of <i>height</i>,
+<i>width</i> and <i>depth</i>. A</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>convolutional
+filter has a specific height and width, like 3x3 or 5x5, and by design it
+covers the entire depth of its input so</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>it needs to
+be 3D as well. You may notice that the size of the <i>feature map </i>is
+smaller than the <i>input</i>, the input is 5x5 matrix and the </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>feature map
+is 3x3.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=749 height=360 id="Picture 57"
+src="index_files/image037.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 37 A</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The
+convolution operation for each filter is performed independently and the
+resulting feature maps are disjoint.</span><span style='font-size:14.0pt;
+line-height:107%;color:black;letter-spacing:-.05pt;background:white'> We then
+stack all these feature maps together</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%;color:black;
+letter-spacing:-.05pt;background:white'>and that becomes the final output of
+the convolution layer</span>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=892 height=598 id="Picture 48"
+src="index_files/image038.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 38</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This is the <i>Identity
+kernel/filter</i>. When applied to an image through convolution, it will have
+no effect on the resulting image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Every pixel
+will return its original value as shown in the picture.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=840 height=631 id="Picture 50"
+src="index_files/image039.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 39</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This is the <i>Sharpen
+Kernel</i>. When applied to an image through convolution, it will have an image
+sharpening effect to the</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>resulting
+mage. The precise values can be customized for varying levels of sharpness as
+shown in the image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=867 height=704 id="Picture 51"
+src="index_files/image040.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 40</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The Gaussian
+Blur Kernel like this when applied to an image through convolution, will apply
+a Gaussian Blurring effect to the </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>resulting
+image. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I want to emphasize
+that you do not specify a filter type in CNNs, you just specify number of
+kernels/filters, dimensions of the filters,</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>initial
+weights, number of layers, etc. The network then creates the suitable filter by
+training and changing its weights.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>So, <i>filters
+are weights</i> and they are adjusted while network is trained.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>Pooling (maxPooling2d
+Layer)</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>After a
+convolution operation we usually perform <i>pooling </i>to reduce the
+dimensionality (Figure 28).  This enables us to reduce the number of</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>parameters
+which both shortens the training time and avoid <i>overfitting</i> problems.  Pooling
+layers downsample each feature map</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>independently,
+reducing the <i>height</i> and <i>width</i>, but keeping the <i>depth</i>
+intact. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=840 height=272 id="Picture 52"
+src="index_files/image041.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 41</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The most
+common type of pooling is <i>max pooling </i>which take the max value in the
+pooling window. We slide it over the input, and simply</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>take the max
+value in the window. Here is the result of <i>max pooling 2x2</i> window and <i>stride
+2</i>. Each color shows different window.  As both</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the window
+size and stride are 2, the windows are not overlapping. Note, that the <i>window</i>
+and <i>stride </i>configuration halves the size of the </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>feature map.
+This is the main use case of pooling, downsampling the feature map while keeping
+the important information.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=862 height=383 id="Picture 53"
+src="index_files/image042.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 42</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I just want
+to show it in 3D view. With pooling the result is 16x16x10 from 32x32x10. Both
+the height and width of the feature map are halved, but</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the depth
+does not change because pooling works independently on each depth slice input.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>Fully
+Connected Layer</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>After the
+convolution and pooling layers, we add a couple of fully connected layers
+(Figure 28). The output of both convolution and pooling layers are</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>3D but the
+fully connected layer expects 1D vector of numbers. For that reason, we just <i>flatten
+</i>the output of the pooling layer to vector and that becomes</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the input of
+the fully connected layer. <i>Flattering</i> is simply arranging the 3D volume
+of numbers into a 1D vector.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>When we <i>squash</i>
+a multi-dimensional tensor into 1D tensor the total number of elements should
+be preserved. For example, how to order the elements</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>during <i>squashing</i>
+when, say, 3D tensor of [3, 3, 32] is flattened into a 1D tensor [228]? </span></p>
+
+<p class=MsoNormal><img border=0 width=811 height=575 id="Picture 56"
+src="index_files/image043.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 43</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here you see
+indices of the elements. I colored 1,1,0 indices to be clear. We order the
+elements such that if you go down the elements</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>in the
+flattened 1D tensor and look at how their original indices (from 3D tensor)
+changes, the last index changes the fastest, the second-last</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>index
+changes the second fastest, and so forth, while the first index changes the
+slowest. First one is 0,0,<b>0 </b>then 0,0,<b>1 </b>then<b> </b>0,<b>1,0, </b>then<b>
+</b>0,<b>1,1</b> etc.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>Application</span></b></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></b></p>
+
+<p class=MsoNormal><img border=0 width=1037 height=519 id="Picture 58"
+src="index_files/image044.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 44</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Before
+running the application, the first thing we should do is specifying <i>Service
+URL</i>. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=553 height=304 id="Picture 59"
+src="index_files/image045.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 45</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This <i>Service
+URL </i>should point to <i>model.json </i>file which will load all the weights,
+.bin files (Figure 30). The overall size is 530MB. As we run an SPFx SharePoint
+app,</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>one of the
+logical places to put them can be Office 365 <i>Content Delivery Network (CDN)</i>
+but loading 530 MB from the CDN could take hours and hours which</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>is
+definitely not the best solution. VGG16 is a relatively large convent and it
+runs faster in the less resource-restricted environment such as <i>Node.js</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>With SPFx
+with do not have that option and have to make use of an <i>http</i> service.
+What I am going to do is to load the model and its</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'> weights from </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>my computer,
+<i>localhost</i> but somehow my local network should be publicly available in
+order to specify it on the property pane (Figure 44).</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1126 height=560 id="Picture 60"
+src="index_files/image046.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 46</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I created an
+IIS virtual directory pointing to VGG16 model and weights folder.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=861 height=351 id="Picture 61"
+src="index_files/image047.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 47</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Enabled CORS
+on IIS6.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=813 height=558 id="Picture 62"
+src="index_files/image048.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 48</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I can access
+<i>model.json</i> via http but it is not publicly available as it is running on
+my <i>localhost</i>. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>ngrok</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>As a
+solution we will use <i>ngrok </i></span><a href="https://ngrok.com/"
+target="_blank"><span style='font-size:14.0pt;line-height:107%'>https://ngrok.com/</span></a><span
+style='font-size:14.0pt;line-height:107%'> which provides public URL for
+exposing your local server. It will create a</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>subdomain on
+<i>ngrok</i> domain and will redirect all the traffic on that subdomain to your
+local server. Using <i>ngrok </i>is extremely easy.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1145 height=595 id="Picture 63"
+src="index_files/image049.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 49</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Go to </span><a
+href="https://ngrok.com/" target="_blank"><span style='font-size:14.0pt;
+line-height:107%'>https://ngrok.com/</span></a><span style='font-size:14.0pt;
+line-height:107%'> and <i>LOGIN</i> or <i>SIGN UP</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1156 height=604 id="Picture 64"
+src="index_files/image050.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 50</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Download <i>ngrok</i>
+executable for your platform unzip and run it.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1148 height=548 id="Picture 65"
+src="index_files/image051.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 51</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Connect your
+account with auth token.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1154 height=506 id="Picture 66"
+src="index_files/image052.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 52</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I ran the
+command and auth token was saved to configuration file.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1083 height=382 id="Picture 67"
+src="index_files/image053.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 53</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Suppose our
+app is running on port 5000. We specify http and port of our app.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1085 height=413 id="Picture 68"
+src="index_files/image054.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 54</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Now, <i>ngrok
+</i>is forwarding from https://e0... to <i>localhost 5000</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=745 height=506 id="Picture 70"
+src="index_files/image055.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 55</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In our case
+the port was 80 that we connected you can see that <i>model.json</i> and all
+the <i>weights</i> have been loaded.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=875 height=452 id="Picture 71"
+src="index_files/image056.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 56</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>ngrok</span></i><span
+style='font-size:14.0pt;line-height:107%'> in action.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>Each time you run <i>ngrok</i> command, a new address will be
+created and each time you have to go to property pane (Figure 44)</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>to specify the new address. You can get the payed <i>ngrok</i> version
+to set up a permanent address.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>In my machine it takes up to 5 minutes to load VGG16 model. Once
+the model is loaded, we can predict an image directly. No need to train </span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>as we use VGG16 pretrained model.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><b><span style='font-size:14.0pt;
+color:black'>Prediction</span></b></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><b><span style='font-size:14.0pt;
+color:black'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='margin-top:12.0pt;line-height:11.75pt'><img border=0
+width=946 height=626 id="Picture 72" src="index_files/image057.png"></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>Figure 57</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>We select <i>cat.jpg</i> image to predict.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt;line-height:11.75pt'><span
+style='color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt;line-height:11.75pt'><img border=0
+width=985 height=501 id="Picture 74" src="index_files/image058.jpg"></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>Figure 58</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>One of the ways to get image tensors in the browser is to use the
+TensorFlow.js function <i>tf.browser.fromPixels() </i>on HTML</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'> elements that contain image data. This includes <i>Img</i>, <i>canvas</i>
+and <i>video</i> elements. For an image example it can be</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'> &lt;img id=</span><span style='font-size:14.0pt;color:black'>'</span><span
+style='font-size:14.0pt;color:black'>imageId</span><span style='font-size:14.0pt;
+color:black'>'</span><span style='font-size:14.0pt;color:black'> src=</span><span
+style='font-size:14.0pt;color:black'>cat</span><span style='font-size:14.0pt;
+color:black'>.jpg</span><span style='font-size:14.0pt;color:black'>'</span><span
+style='font-size:14.0pt;color:black'> /&gt;. With <i>tf.browser.fromPixels() </i>we
+obtain the image data and generate a tensor of shape</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>[height, width, 3], where the three channels are for RGB color
+encoding. The tensor returns int32-type, but the convent </span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>expects float32-type tensors as inputs. For that reason, we cast to
+<i>.asType(</i></span><span style='font-size:14.0pt;color:black'>'<i>float32</i>'</span><i><span
+style='font-size:14.0pt;color:black'>)</span></i><span style='font-size:14.0pt;
+color:black'>.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>The height and width are determined by the size of the image
+element and in our case the tensor is [505, 760, 3]. It does</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>not match the height and width expected by the model and what we
+can do is resize the tensor using one of the two</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>image-sizing methods provided by TensorFlow.js <i>tf.image.resizeBilinear</i>
+and <i>tf.image.resizeNearesteigbor</i>. We chose the</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>first one. The tensor created by <i>tf.browser.fromPixels() </i>does
+not include a batch dimension. If the tensor is to be fed into</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>a TensorFlow.js model, it must be expanded first via <i>expandDims().</i>
+It takes a dimension argument but we can omit it as we</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>expand the first dimension.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt;line-height:11.75pt'><img border=0
+width=1009 height=548 id="Picture 75" src="index_files/image059.jpg"></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>Figure 59</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>As the VGG16 model expects an image of size 224 x 244 x 3 we
+resized it to [1, 224, 224, 3]. The batch size is 1 as we process just one
+image.</span></p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><span style='font-size:14.0pt;
+color:black'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=981 height=520 id="Picture 76"
+src="index_files/image060.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 60</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Now, we
+start predicting.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1115 height=605 id="Picture 77"
+src="index_files/image061.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 61</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We get the
+predicated 1D tensor of 1000 output classes and pick the first 3 sorted by the
+probability.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1033 height=595 id="Picture 78"
+src="index_files/image062.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 62</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here are top
+three predictions - <i>Egyptian</i> <i>cat</i> with the highest probability of
+0.8987 (89%).</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>Internal
+Activations</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We are going
+to visualize the feature maps to see how the input is transformed passing
+through the convolutional layers.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The <i>feature
+maps</i> are also called <i>intermediate activations </i>since the output of a
+layer is called the activation. We will visualize</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>individual
+feature maps by plotting each channel as a 2D image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1110 height=595 id="Picture 83"
+src="index_files/image063.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 63</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We are
+selecting some layers/blocks for <i>internal activations</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1030 height=511 id="Picture 79"
+src="index_files/image064.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 64</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here are the
+blocks/layers we selected. Via <i>model.getLayer() </i>we get the <i>layerOutputs</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1048 height=532 id="Picture 80"
+src="index_files/image065.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 65</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We have 6 layersOutput
+based on our selection.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1087 height=445 id="Picture 81"
+src="index_files/image066.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 66</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Next, we are
+going to create a composite model based on previously selected 6 layerOutputs
+plus our model</span><span style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s output which was our prediction
+1000 </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>output
+classes (Figure 61). An input can have multiple outputs and not necessarily
+just one. We constricted a model that should return all the desired </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>internal activations.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=945 height=644 id="Picture 82"
+src="index_files/image067.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 67</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>tf.model</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s <i>inputs</i> and <i>outputs</i>
+are <i>SymbolicTensors</i>? What is SymbolicTensor?</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>As we knew a
+<i>Tensor </i>object carries concrete numeric values of a given shape.
+SymbolicTensor is another important class</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>in <i>TensorFlow.js</i>.
+Instead of holding concrete values, a SymbolicTensor specifies only a <i>shape</i>
+and <i>dtype</i>. A SymbolicTensor</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>can be
+thought of a <i>slot</i> or a <i>placeholder, </i>to which<i> </i>an actual
+tensor value may be inserted later, given the tensor value has</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>a computable
+<i>shape</i> and <i>dtype</i>. In TensorFlow.js, a <i>Layer</i> or <i>Model</i>
+object takes one or more inputs and those are represented</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>as one or
+more SymbolicTensors. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1086 height=553 id="Picture 84"
+src="index_files/image068.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 68</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Predicted <i>outputs
+</i>is an array of <i>tf.Tensor</i></span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'</span><i><span style='font-size:14.0pt;
+line-height:107%'>s</span></i><span style='font-size:14.0pt;line-height:107%'>,
+including the internal activations. The first output tensor</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s shape is [1, 224, 224, 64]</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=934 height=544 id="Picture 85"
+src="index_files/image069.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 69</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The fourth
+one has a shape of [1, 56, 56, 256].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=869 height=580 id="Picture 87"
+src="index_files/image070.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 70</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>These are
+the blocks/layers we selected and you can see the outputs</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'> shapes on the model.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=798 height=591 id="Picture 89"
+src="index_files/image071.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 71</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I want to
+show how <i>tf.split() </i>works, We have a 4D tensor of shape [1, 2, 2, 4]. <i>4</i>
+in the tensor is the depth of the tensor which is actually</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>filters. We
+are going to split the tensor by filters. As the filters</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'> count is 4 then we pass 4 to
+tf.split(x, <b>4</b>, -1) which is <i>numOrSizeSplits</i>.<i> </i></span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>-1 </span></i><span
+style='font-size:14.0pt;line-height:107%'>is the inner dimension along which to
+split the tensor. After splitting we are getting tensors</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'> array of size 4 and each tensor has the
+shape of [1, 2, 2, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1157 height=513 id="Picture 90"
+src="index_files/image072.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 72</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We do
+exactly the same in the project. We go over the outputs and split it by
+filters. I display it on the first <i>output</i>, <i>outputs[0].</i> Filters
+count is 64 so</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>after
+splitting we are getting tensors</span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'</span><span style='font-size:14.0pt;line-height:
+107%'> array of size 64 and tensor</span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'</span><span style='font-size:14.0pt;line-height:
+107%'>s shape is [1, 224, 224, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1144 height=576 id="Picture 4"
+src="index_files/image073.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 73</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We are getting
+the actual number of filters. In this case it is 64 but we want to take the
+first 8 as <i>Number of Filters</i> 8 is specified on the property pane.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'> </span><img
+border=0 width=859 height=522 id="Picture 12" src="index_files/image074.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 74</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>tf.tile </span></i><span
+style='font-size:14.0pt;line-height:107%'>– constructs a tensor by repeating it
+number of times given by reps. Our tensor</span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'</span><span style='font-size:14.0pt;line-height:
+107%'>s shape is [1, 2, 2, 1] and after the reputation its shape is [1, 2, 2, 3].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1203 height=671 id="Picture 22"
+src="index_files/image075.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 75</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Our original
+tensor</span><span style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s shape is [1, 224, 224, 1] and after
+applying <i>tf.tile() </i>the shape became [1, 224, 224, 3], You can also see
+data inside the tensor repeated three times.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We repeated
+three times (RGB channels) because we are going to construct an image from the
+tensor into a valid image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1114 height=651 id="Picture 26"
+src="index_files/image076.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 76</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>deprocessImage</span></i><span
+style='font-size:14.0pt;line-height:107%'>() is taken from the <i>Keras</i>. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1151 height=630 id="Picture 27"
+src="index_files/image077.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 77</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>Standardization</span></i><span
+style='font-size:14.0pt;line-height:107%'> is a data scaling technique that
+assumes that the distribution of the data is Gaussian and shifts the
+distribution of the data to have</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>a mean of
+zero and a standard deviation of one. With <i>Standardization </i>the values
+are going to range from negative one standard deviation to one</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>standard
+deviation with the average value falling out around zero.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The formula
+is <i>(value&#8722;&#956;)/&#963;</i> where <i>&#956; </i>is the mean value, <i>&#963;
+</i>is the standard deviation. We also add a small positive (EPSILON) to the denominator</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>to prevent division
+by-zero. You can see that now the numbers are ranging from -1 to 1.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=925 height=319 id="Picture 38"
+src="index_files/image078.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 78</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>With <i>tf.clipByValue</i>
+we clip tensor</span><span style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s value to a specified <i>min</i> and
+<i>max</i>. You see the original tensor is clipped to another tensor with the
+range 0 - 1.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1006 height=641 id="Picture 46"
+src="index_files/image079.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 79</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>First, we
+increase tensor</span><span style='font-size:14.0pt;line-height:107%;
+color:black'>'</span><span style='font-size:14.0pt;line-height:107%'>s values by
+0.5 and <i>ClipByValue</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1150 height=572 id="Picture 54"
+src="index_files/image080.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 80</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We multiplied
+the input by 255 and clipped them so the numbers range from 0 to 255. <i>deproseeImage()
+</i>function centers and scaled input image</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>so, the
+pixel values fell into [0, 255].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1169 height=409 id="Picture 55"
+src="index_files/image081.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 82</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Once we <i>deprocessImage
+</i>in order words generated image tensor, we are going to create an object
+with two properties, <i>data</i> and <i>shape</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Note, we divided
+the tensor to 255 to have pixel values felling into [0, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=820 height=472 id="Picture 69"
+src="index_files/image082.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 83</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The reason
+is that later we are going to display an image on the canvas and if the input is
+<i>float32</i> then data values should be in the range [0, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>With <i>data</i>
+and <i>shape</i> properties we can save any tensor to a SharePoint list as a
+string and construct the tensor back form the string.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1045 height=572 id="Picture 73"
+src="index_files/image083.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 84</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We <i>stringify</i>
+all tensors data and insert them into a SharePoint list.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1213 height=440 id="Picture 155"
+src="index_files/image084.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 85</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We keep
+tensors into a SharePoint <i>multiline text input field</i>. <i>Multiline text
+input filed</i> has a limit so we keep tensor</span><span style='font-size:
+14.0pt;line-height:107%;color:black'>'</span><span style='font-size:14.0pt;
+line-height:107%'>s data in chunks not to exceed the limit. </span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>block1_conv1_0_chunk_0
+</span></i><span style='font-size:14.0pt;line-height:107%'>keeps the first chunk
+of <i>block1_conv1_0</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1131 height=442 id="Picture 91"
+src="index_files/image085.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 86</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>block1_conv1_0_chunk_2
+</span></i><span style='font-size:14.0pt;line-height:107%'>keeps the last chunk
+of <i>block1_conv1_0</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1125 height=521 id="Picture 93"
+src="index_files/image086.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 87</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We draw an image
+on the canvas using <i>tf.browser.toPixels() </i>and we already talked about
+it. Before it, we have to squeeze the tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=852 height=440 id="Picture 94"
+src="index_files/image087.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 88</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>By squeezing
+we remove a dimension (the opposite of <i>expand</i>). Without giving an axis
+we squeeze the first dimension and we need it.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>After squeezing
+the tensor [1, 2, 2, 4] we are getting a new tensor [2, 2, 4]. We actually
+removed the batch size. We need a 3D tensor (without the batch size) </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>to draw an
+image. In Figure 86 you see that one of our tensors</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'> shape is [1, 224, 224, 3] and by squeezing
+we will get a tensor of the shape [224, 224, 3] to draw on </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the canvas.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1196 height=556 id="Picture 92"
+src="index_files/image088.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 89</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This time I
+generated <i>Internal Activations</i> for all layers. Note, that you still can
+view <i>Internal Activations</i> after reloading the page as data persist in the
+SharePoint list.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1239 height=608 id="Picture 95"
+src="index_files/image089.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 90</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>These are
+the <i>feature maps</i>, also called <i>Internal Activations </i>because they
+are not the final output of the model.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here are the
+results of the first <i>block1_conv1</i> layer. There are 8 pictures of <i>block1_conv1</i>
+as we specified the <i>Number of Filters</i> 8 </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>on the
+property pane. We could specify even 64 and see all the filters of the layer. <i>block1_conv1</i>
+image size is 224 x 224 (Figure 28). </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The channels
+of conjugational layers do not interpreted as different color components because
+they are learned</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>feature
+dimensions. That is why they are grayscale.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The first layer
+of the feature <i>block1_conv1 </i>retain most of the information present in
+the image. In CNN architectures the first layers usually act </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>as <i>edge
+detectors</i>. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1261 height=466 id="Picture 96"
+src="index_files/image090.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 91</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>For example,
+this filter seems to respond to the yellow and pink colors.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1167 height=494 id="Picture 98"
+src="index_files/image091.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 92</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This <i>Internal
+Activation </i>seems to be about edges along certain orientations in the input
+image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1130 height=657 id="Picture 99"
+src="index_files/image092.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 93</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>As we go
+deeper into the network, the feature maps look less like the original image and
+more like abstract representation. As you can see in <i>block3­_conv1 </i></span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the cat is
+somewhat visible, but after that it becomes unrecognizable. The reason is that
+deeper feature maps encode high level concepts like <i>cat nose</i> or</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>dog ear </span></i><span
+style='font-size:14.0pt;line-height:107%'>while lower level feature maps detect
+simple edges and shapes. That is why deeper feature maps contain less
+information <i>about the image</i> and</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>more about
+the <i>class of the image</i>. They still encode useful features, but they are
+less visually interpretable by us.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1166 height=535 id="Picture 100"
+src="index_files/image093.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 94</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>For example,
+in <i>block4_conv2 </i>seems to encode the cat</span><span style='font-size:
+14.0pt;line-height:107%;color:black'>'</span><span style='font-size:14.0pt;
+line-height:107%'>s facial features including the <i>ears</i>, <i>eyes</i> and <i>nose</i>.
+This is a concrete example of the</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>incremental
+feature extraction</span></i><span style='font-size:14.0pt;line-height:107%'>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1260 height=496 id="Picture 101"
+src="index_files/image094.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 95</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Another
+interesting observation is that the <i>sparsity </i>of the activation maps also
+increases with the depth of the layer.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In the last
+layer some of the layers become blank (constant pixel pattern). This means the
+features encoded by those blank filters are absent from </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the input image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We came to the
+conclusion that the features extracted by a layer become increasingly more
+abstract with the depth of the layer. The activations</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>of deeper
+layers carry less and less information about the details in the input, and more
+and more information about the target (in this case,</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>which of the
+1000 ImageNet classes the image belongs to).</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>CAM
+Heatmap</span></b></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>CAM (class
+activation map) let us see which regions in the image were relevant to the
+class. For example, when the <i>cat.jpg </i>image was passed to the VGG16</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Network, we
+got a top class of <i>Egyptian cat </i>with a probability score of 0.89. But by
+looking at just the image input and the classification output, we can no tell</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>which parts
+of the image are important for this decision. Some parts of the image (e.g. cat</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s head) must have played a grater
+role that other parts</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>(e.g. the
+white background). Given an input image and a classification result from a
+convent, <i>CAM </i>gives you a great map that assigns importance scores</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>to different
+parts of the image.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=556 height=444 id="Picture 102"
+src="index_files/image095.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 96</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>A heat map
+is a graphical representation of data where individual values are represented
+as colors.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1005 height=511 id="Picture 104"
+src="index_files/image096.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 97</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>First we obtain
+<i>tf.topk </i>indices from our prediction.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1004 height=581 id="Picture 103"
+src="index_files/image097.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 98</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I show top 3
+indices and values that we can get from our image prediction. You see top 3
+values and indices. They are top three prediction of our cat.jpg.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1075 height=508 id="Picture 105"
+src="index_files/image098.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 99</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Actually, we
+can display top 3 predictions using <i>tf.topk </i>but we chose another
+approach.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1111 height=566 id="Picture 107"
+src="index_files/image099.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 100</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Next, we are
+going to find the deepest convolutional layer of the convent. In VGG16 this
+layer is named <i>block5_conv3</i>. Note, we also passed the top-class<i> index</i>,</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>which is 285
+- <i>Egyptian Cat</i> prediction.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1068 height=489 id="Picture 108"
+src="index_files/image100.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 101</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We create a
+new model called <i>subModel1 </i>which goes from the original input to the
+output of the last convolutional network. <i>Input</i> shape is</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>[null, 224,
+224, 3] (batch size is null).</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=866 height=574 id="Picture 109"
+src="index_files/image101.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 102</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Output shape
+is [null, 14, 14, 512].</span></p>
+
+<p class=MsoNormal><img border=0 width=903 height=610 id="Picture 110"
+src="index_files/image102.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 103</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In the
+diagram you see that the output of the last convolutional network is [14, 14,
+512] (<i>block5_conv3</i>) and the input shape is [224, 224, 3].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=903 height=610 id="Picture 111"
+src="index_files/image103.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 104</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Now, we are going
+to create another model.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1044 height=499 id="Picture 112"
+src="index_files/image104.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 105</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Our input in
+this case is the last conv layer output.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1076 height=608 id="Picture 113"
+src="index_files/image105.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 106</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In
+TensorFlow.js the most common type of model is the Sequential model which is
+linear stack of layers. You basically create a model and add layers.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1179 height=636 id="Picture 114"
+src="index_files/image106.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 107</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>There is
+another way of creating a model - <i>functional model</i>. We create an
+arbitrary graph of layers and call <i>apply() </i>on each layer in order to
+connect it to</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the output
+of another layer.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1022 height=612 id="Picture 115"
+src="index_files/image107.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 108</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We use
+functional way of creating model here. The last index is 17 (<i>block5_conv3)</i>
+and model layers length is 23.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1087 height=542 id="Picture 116"
+src="index_files/image108.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 109</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>subModel2
+includes 32 - 17 = 6 layers.</span></p>
+
+<p class=MsoNormal><img border=0 width=631 height=637 id="Picture 117"
+src="index_files/image109.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 110</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>These
+includes <i>max pooling</i>, <i>dense</i> layers etc.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1007 height=496 id="Picture 118"
+src="index_files/image110.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 111</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>What we have
+to do next is to compute the gradient of the network</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s output probability for the winning
+class with respect to the</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>output of
+the last convolutional layer of the original model. For that we specify <i>gradFunction</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=916 height=337 id="Picture 119"
+src="index_files/image111.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 112</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is an
+example. The gradient of x square (x ^2) is 2x. The output tensor is 2 * [2, 3]
+= [4, 6]. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1030 height=615 id="Picture 120"
+src="index_files/image112.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 113</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We <i>apply</i>
+cat.jpg image to <i>subModel1 </i>(apply() is similar to predict()). Note, that
+we call <i>apply() </i>to a model, and previously (Figure 107) we called <i>apply()
+</i>on each layer in</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>order to connect
+it to the output of another layer – different things.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1167 height=524 id="Picture 121"
+src="index_files/image113.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 114</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We apply the
+input which was <i>lastConvOutputValues </i>to <i>subModel2</i>. As you remember
+the output was 1000 output classes.</span></p>
+
+<p class=MsoNormal><img border=0 width=1045 height=299 id="Picture 122"
+src="index_files/image114.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 115</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>tf.gather()
+</span></i><span style='font-size:14.0pt;line-height:107%'>gathers slices from a
+tensor according to <i>indices</i>. I specified 2D tensor [1 x 10] and based on
+the <i>indices </i>which is 6 I got a new tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1075 height=460 id="Picture 123"
+src="index_files/image115.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 116</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>class index</span></i><span
+style='font-size:14.0pt;line-height:107%'> is 285.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1149 height=442 id="Picture 124"
+src="index_files/image116.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 117</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>The corresponding
+value is 0.8987. Actually, we extracted the slice of the probability output
+that corresponds to the desired class.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1090 height=644 id="Picture 125"
+src="index_files/image117.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 118</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We can see <i>gradValues</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=812 height=547 id="Picture 130"
+src="index_files/image118.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 119</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>tf.mean()
+</span></i><i><span style='font-size:13.0pt;line-height:107%'>­</span></i><span
+style='font-size:13.0pt;line-height:107%'>[0, 1, 2]  </span><span
+style='font-size:14.0pt;line-height:107%'>computes the mean/average of element across
+dimensions. Our tensor</span><span style='font-size:14.0pt;line-height:107%;
+color:black'>'</span><span style='font-size:14.0pt;line-height:107%'>s shape is
+[1, 2, 2, 4] ([1, h, w, numFilters]). We average</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the tensor across
+<i>height</i> and <i>width </i>dimensions, which gives us a tensor of shape [numFilters].
+We got a new 1D tensor [4] ([numFilters])</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Let</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s understand how we got <i>Tensor [7,
+8, 9, 10]</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>[0, 1, 2] specifies
+which dimension we want to do the <i>mean</i>. The smallest number shows the
+outer dimension and the biggest the <i>inner</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>So, we start
+from the <i>inner</i> dimension which is 2.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=461 height=306 id="Picture 132"
+src="index_files/image119.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 120</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Now, the
+tensor is of shape [1, 2, 4] after averaging across the <i>inner</i> dimension
+2.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=565 height=187 id="Picture 133"
+src="index_files/image120.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 121</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We do the
+same operation on the received tensor across the dimension 1 and getting a new
+tensor of shape [1, 4].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=363 height=362 id="Picture 135"
+src="index_files/image121.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 122</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Doing it across
+the <i>outer</i> dimension 0 and the result is 1D tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'> </span></p>
+
+<p class=MsoNormal><img border=0 width=1129 height=468 id="Picture 128"
+src="index_files/image122.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 123</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We pool the
+gradient values within each filter of the last convolutional layer, resulting
+in a tensor of shape [numFilters] ([1, 14, 14, 512] -&gt; [512]). </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>This is an
+array of important scores, one for each filter of the convolutional layer.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=998 height=569 id="Picture 129"
+src="index_files/image123.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 124</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We scale the
+convolutional layer</span><span style='font-size:14.0pt;line-height:107%;
+color:black'>'</span><span style='font-size:14.0pt;line-height:107%'>s output
+by the pooled gradients using broadcasting.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=547 height=303 id="Picture 136"
+src="index_files/image124.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 125</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I am averaging
+[1, 2, 2, 4] across the inner dimension -1. The result is [1, 2, 2] tensor. </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1090 height=595 id="Picture 137"
+src="index_files/image125.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 126</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here out
+heatmap is of shape [1, 14, 14]. We created heat map by averaging and
+collapsing over all filters.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=995 height=552 id="Picture 139"
+src="index_files/image126.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 127</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Some values
+are negative.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=963 height=576 id="Picture 140"
+src="index_files/image127.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 128</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>After
+calling <i>reLU()</i> function negative values turned to zero. We discarded negative
+values from the heat map.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=499 height=340 id="Picture 141"
+src="index_files/image128.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 129</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>ReLU</span></i><span
+style='font-size:14.0pt;line-height:107%'> stands for <i>rectified linear unit</i>,
+and is a type of activation function. It<i> </i>is linear for all positive
+values, and zero for all negative values.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1071 height=577 id="Picture 142"
+src="index_files/image129.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 130</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We normalize
+the heatmap to the [0, 1]</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=537 height=228 id="Picture 144"
+src="index_files/image130.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 131</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I have a
+tensor 3D of shape [1, 2, 2]. I <i>expand dimension</i> across the <i>inner</i>
+access. The result is 4D tensor of shape [1, 2, 2, 1]</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1106 height=471 id="Picture 145"
+src="index_files/image131.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 132</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We expanded our
+heatmap across the <i>inner</i> direction and the shape is [1, 14, 14, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1065 height=527 id="Picture 146"
+src="index_files/image132.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 133</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Next, we
+upscale the heat map of the size of the input image - [1, 224, 224, 1].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1157 height=537 id="Picture 147"
+src="index_files/image133.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 134</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>I commented
+the existing code and squeezed the heatmap across the first dimension to get 3D
+image and returned it.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=915 height=565 id="Picture 148"
+src="index_files/image134.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 135</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>At this stage
+you see that we have grayscale heatmap because the heatmap is 1-channel
+(grayscale) heatmap [224, 224, <b>1</b>].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1171 height=510 id="Picture 151"
+src="index_files/image135.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 136</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'> Let</span><span
+style='font-size:14.0pt;line-height:107%;color:black'>'</span><span
+style='font-size:14.0pt;line-height:107%'>s make RBG heatmap.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1177 height=451 id="Picture 150"
+src="index_files/image136.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 137</span></p>
+
+<p class=MsoNormal><i><span style='font-size:14.0pt;line-height:107%'>applyColorMap()
+</span></i><span style='font-size:14.0pt;line-height:107%'>converts mono-color
+image to color by applying a color map. The input is shape of [1, height,
+width, 1] and the output is a color image</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>of shape [1,
+height, width, 3].</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>First, we
+normalize the input image. It is called min-max normalization (value&#8722;min)/(max&#8722;min);
+the minimum value gets transforms into a 0,</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>the maximum
+value gets transferred into a 1 and every other value gets transformed into a
+decimal between 0 and 1. Then we create a buffer and </span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>apply a
+color form RGB_COLORMAP and output the RBG tensor from the buffer.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=816 height=511 id="Picture 149"
+src="index_files/image137.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 138</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here we
+generated our RGB heatmap but our cat image is missing.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1094 height=580 id="Picture 152"
+src="index_files/image138.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 139</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We overlay
+the color heat map on the input image to get the output. Note, we do not
+multiply the output to 255 to get an image of 0 - 255 range.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>We need an image
+in 0 - 1 as we generated for the <i>internal activation</i> case (Figure 83).  CAM
+image tensor is saved to a SharePoint list similar to <i>Internal Activations</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=1245 height=477 id="Picture 153"
+src="index_files/image139.jpg"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 140</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>CAM heatmap
+tensor.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><img border=0 width=552 height=391 id="Picture 154"
+src="index_files/image140.png"></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Figure 141</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>Here is the
+final output.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>In the
+result, we see that the outline of the cat</span><span style='font-size:14.0pt;
+line-height:107%;color:black'>'</span><span style='font-size:14.0pt;line-height:
+107%'>s head has the highest values <i>in the heat map</i>.</span></p>
+
+<p class=MsoNormal><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:14.0pt;line-height:107%'>&nbsp;</span></b></p>
+
+</div>
+
+</body>
+
+</html>

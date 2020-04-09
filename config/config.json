@@ -1,0 +1,25 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "vgg-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/vgg/VggWebPart.js",
+          "manifest": "./src/webparts/vgg/VggWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {
+    "tf": {
+      "path": "src/lib/tf.js",
+      "globalName": "tf"
+    }
+  },
+  "localizedResources": {
+    "VggWebPartStrings": "lib/webparts/vgg/loc/{locale}.js",
+    "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js",
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
+  }
+}

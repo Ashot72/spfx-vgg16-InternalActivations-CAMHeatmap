@@ -1,0 +1,39 @@
+.header {
+  background-color: rgb(0, 78, 140);
+  color: #fff;
+  font-size: 24px;
+  height: 40px;
+  padding-left: 20px;
+}
+
+.modalBody {
+  padding: 5px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 70px;
+}
+
+.close {
+  float: right;
+  margin-top: 6px;
+  margin-right: 6px;
+}
+
+.flexContainer {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.flexContainer > div {
+  max-width: 230px;
+  margin: 10px;
+  text-align: center;
+}
+
+/*
+  :global(.ms-Overlay) {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+  }
+  */
